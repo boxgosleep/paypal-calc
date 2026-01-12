@@ -3,20 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PayPal Fee Calculator ✨</title>
+    <title>PayPal Fee Calculator</title>
     
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐰</text></svg>">
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23FF8BA7'/%3E%3Cpath d='M35 32h30v36H35z' fill='%23fff'/%3E%3Ctext x='50' y='62' font-family='Arial' font-weight='bold' font-size='36' text-anchor='middle' fill='%23FF8BA7'%3E%24%3C/text%3E%3C/svg%3E">
+
     <style>
+        /* 全局設定：這行是修復框框跑出去的關鍵！ */
+        * {
+            box-sizing: border-box;
+        }
+
         :root {
             --bg-color: #FFF5F7;
             --card-bg: #FFFFFF;
-            --primary: #FF8BA7;
+            --primary: #FF8BA7; /* 主色調：蜜桃粉 */
             --secondary: #FFC6C7;
             --text-main: #594A4E;
             --text-light: #9C8990;
-            --accent-green: #20bf6b;
+            --icon-color: #FF8BA7;
         }
 
         body {
@@ -29,6 +36,7 @@
             min-height: 100vh;
             margin: 0;
             padding: 20px;
+            /* 背景點點 */
             background-image: radial-gradient(#ffeef2 20%, transparent 20%), radial-gradient(#ffeef2 20%, transparent 20%);
             background-position: 0 0, 50px 50px;
             background-size: 100px 100px;
@@ -40,22 +48,21 @@
             border-radius: 30px;
             box-shadow: 0 15px 35px rgba(255, 139, 167, 0.15);
             width: 100%;
-            max-width: 420px;
+            max-width: 420px; /* 限制最大寬度 */
             text-align: center;
             border: 4px solid #FFF;
             position: relative;
         }
 
-        /* --- 新的扁平化星星圖示 (SVG) --- */
+        /* 扁平化裝飾圖案 (幾何星星) */
         .decoration-star {
             position: absolute;
-            top: -25px;
-            right: -20px;
-            width: 50px;
-            height: 50px;
-            background-image: url("data:image/svg+xml,%3Csvg width='50' height='50' viewBox='0 0 50 50' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M25 0L28.5 18.5L47 22L28.5 25.5L25 44L21.5 25.5L3 22L21.5 18.5L25 0Z' fill='%23FF8BA7'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            animation: float-star 3s ease-in-out infinite;
+            top: -20px;
+            right: -15px;
+            color: var(--primary);
+            font-size: 2.5rem;
+            animation: float 3s ease-in-out infinite;
+            filter: drop-shadow(2px 4px 6px rgba(255,139,167,0.3));
         }
 
         h1 { 
@@ -63,6 +70,10 @@
             margin-bottom: 0.5rem; 
             color: var(--text-main);
             font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
         
         .subtitle {
@@ -72,19 +83,28 @@
         }
 
         /* 輸入區塊樣式 */
-        .input-group { margin-bottom: 1.5rem; text-align: left; }
-        label { display: block; font-size: 0.95rem; margin-bottom: 0.6rem; font-weight: 700; margin-left: 5px; }
-        .currency-row { display: flex; gap: 10px; }
+        .input-group { margin-bottom: 1.2rem; text-align: left; width: 100%; }
+        label { display: block; font-size: 0.95rem; margin-bottom: 0.6rem; font-weight: 700; margin-left: 5px; color: var(--text-main); }
+        
+        /* 讓 Icon 與文字有些距離 */
+        label i { margin-right: 6px; color: var(--icon-color); }
+
+        .currency-row { display: flex; gap: 10px; width: 100%; }
+        
         select, input {
             padding: 12px 14px;
-            border-radius: 18px;
+            border-radius: 16px;
             border: 2px solid #F0E6E8;
             background: #FAFAFA;
             font-weight: 700; color: var(--text-main);
-            outline: none; font-family: inherit; font-size: 1.1rem;
+            outline: none; font-family: inherit; font-size: 1.05rem;
             transition: 0.3s;
+            width: 100%; /* 確保佔滿容器 */
         }
-        input { width: 100%; }
+        
+        /* 讓下拉選單寬度固定一點 */
+        select { width: 35%; flex-shrink: 0; }
+        
         input:focus, select:focus { 
             border-color: var(--primary); background: #FFF;
             box-shadow: 0 0 0 4px rgba(255, 139, 167, 0.1);
@@ -104,57 +124,56 @@
             font-size: 3rem; font-weight: 800; color: var(--primary); line-height: 1.1;
         }
         
-        /* --- 強制對齊的網格系統 (修復對齊問題) --- */
+        /* 網格對齊 (解決文字歪掉) */
         .breakdown-grid {
             margin-top: 1.5rem; padding-top: 1rem;
             border-top: 2px dashed rgba(255, 139, 167, 0.2);
             display: grid;
-            grid-template-columns: auto 1fr; /* 左側自動寬，右側佔滿 */
-            gap: 8px 20px; /* 上下間距8px, 左右間距20px */
+            grid-template-columns: auto 1fr;
+            gap: 10px 20px;
             align-items: start;
         }
-        .bd-label { text-align: left; font-size: 0.85rem; color: var(--text-light); padding-top: 4px;}
-        .bd-value { text-align: right; font-size: 1rem; font-weight: 700; color: var(--text-main); }
+        .bd-label { text-align: left; font-size: 0.9rem; color: var(--text-light); }
+        .bd-value { text-align: right; font-size: 1.1rem; font-weight: 700; color: var(--text-main); }
 
-        /* 台幣小標籤 */
         .twd-tag {
             font-size: 0.8rem; color: var(--primary);
-            background: #fff; padding: 2px 8px;
+            background: #fff; padding: 3px 10px;
             border-radius: 12px; border: 1px solid #ffebf0;
-            display: inline-block; margin-top: 4px;
+            display: inline-block; margin-top: 5px;
         }
 
-        /* --- 設定區塊 (變可愛了) --- */
+        /* 設定區塊 */
         .settings-toggle {
-            margin-top: 1.5rem; font-size: 0.85rem; color: var(--primary);
+            margin-top: 1.5rem; font-size: 0.9rem; color: var(--primary);
             cursor: pointer; opacity: 0.8; transition: 0.3s;
-            display: inline-flex; align-items: center; gap: 5px;
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
         }
         .settings-toggle:hover { opacity: 1; }
         
         .settings { 
-            display: none; /* 預設隱藏 */
-            margin-top: 1rem; padding: 1.2rem; 
-            background: #FFFDFF; border-radius: 20px; text-align: left;
-            border: 2px dashed var(--secondary); /* 可愛虛線框 */
+            display: none; 
+            margin-top: 1rem; padding: 1.5rem; 
+            background: #fffafa; border-radius: 20px; text-align: left;
+            border: 2px dashed var(--secondary);
+            width: 100%; /* 確保不會超出 */
         }
         .settings.show { display: block; animation: slideDown 0.3s ease-out; }
-        .settings-icon { margin-right: 6px; }
 
-        /* --- 免責聲明 (重新排版) --- */
+        /* 免責聲明 */
         .disclaimer-box {
             margin-top: 2rem;
-            background: #F8F4F6; padding: 12px;
-            border-radius: 12px;
-            text-align: left; /* 左對齊 */
-            display: flex; gap: 10px; align-items: flex-start;
+            background: #F8F4F6; padding: 15px;
+            border-radius: 15px;
+            text-align: left;
+            display: flex; gap: 12px; align-items: flex-start;
         }
-        .disclaimer-icon { font-size: 1.2rem; opacity: 0.7; }
+        .disclaimer-icon { color: var(--text-light); margin-top: 2px; }
         .disclaimer-text { font-size: 0.75rem; color: #9C8990; line-height: 1.6; }
 
-        @keyframes float-star {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-8px) rotate(5deg); }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
         @keyframes slideDown {
             from { opacity: 0; transform: translateY(-10px); }
@@ -170,23 +189,26 @@
 <body>
 
 <div class="container">
-    <div class="decoration-star"></div>
+    <i class="fa-solid fa-star decoration-star"></i>
 
-    <h1>Fee Calculator 🐰</h1>
-    <div class="subtitle">PayPal 手續費逆算機</div>
+    <h1>
+        <i class="fa-solid fa-calculator" style="font-size: 1.2rem;"></i> 
+        Fee Calc
+    </h1>
+    <div class="subtitle">PayPal 手續費計算機</div>
     
     <div class="input-group">
-        <label>🌱 實拿金額 / Net Amount</label>
+        <label><i class="fa-solid fa-seedling"></i> 實拿金額 / Net Amount</label>
         <div class="currency-row">
             <select id="currency" onchange="updateCurrency()">
-                <option value="USD">USD ($)</option>
-                <option value="TWD">TWD (NT$)</option>
-                <option value="JPY">JPY (¥)</option>
-                <option value="HKD">HKD ($)</option>
-                <option value="EUR">EUR (€)</option>
-                <option value="GBP">GBP (£)</option>
+                <option value="USD">USD</option>
+                <option value="TWD">TWD</option>
+                <option value="JPY">JPY</option>
+                <option value="HKD">HKD</option>
+                <option value="EUR">EUR</option>
+                <option value="GBP">GBP</option>
             </select>
-            <input type="number" id="receiveAmount" placeholder="例如: 500" oninput="calculate()">
+            <input type="number" id="receiveAmount" placeholder="Ex: 500" oninput="calculate()">
         </div>
     </div>
 
@@ -195,10 +217,10 @@
         <div class="result-value" id="askAmount">$0.00</div>
         
         <div class="breakdown-grid">
-            <div class="bd-label">Fees 手續費:</div>
+            <div class="bd-label">Fees 手續費</div>
             <div class="bd-value" id="feeCost">$0.00</div>
             
-            <div class="bd-label">Net 實拿:</div>
+            <div class="bd-label">Net 實拿</div>
             <div class="bd-value">
                 <span id="realGet">$0.00</span>
                 <br>
@@ -208,37 +230,38 @@
     </div>
 
     <div class="settings-toggle" onclick="toggleSettings()">
-        <span>⚙️ 匯率與費率設定 / Settings</span>
+        <i class="fa-solid fa-sliders"></i> 
+        <span>匯率與費率設定 / Settings</span>
     </div>
     
     <div class="settings" id="settingsPanel">
         <div class="input-group" id="exchangeRateGroup">
-            <label><span class="settings-icon">💱</span>換算匯率 (外幣 → 台幣)</label>
+            <label><i class="fa-solid fa-arrow-right-arrow-left"></i> 換算匯率 (外幣 → 台幣)</label>
             <input type="number" id="exchangeRate" value="32" step="0.1" oninput="calculate()">
-            <div style="font-size: 0.75rem; color: #FF8BA7; margin-top: 5px;">*建議設定比銀行牌告低一點 (預留匯損)</div>
+            <div style="font-size: 0.75rem; color: #FF8BA7; margin-top: 5px;">*建議設定比銀行牌告低 (預留匯損)</div>
         </div>
 
         <div class="input-group">
-            <label><span class="settings-icon">🔢</span>手續費率 / Fee Rate (%)</label>
+            <label><i class="fa-solid fa-percent"></i> 手續費率 / Fee Rate</label>
             <input type="number" id="feeRate" value="4.4" step="0.1" oninput="calculate()">
         </div>
         <div class="input-group" style="margin-bottom: 0;">
-            <label><span class="settings-icon">💵</span>固定費用 / Fixed Fee</label>
+            <label><i class="fa-solid fa-coins"></i> 固定費用 / Fixed Fee</label>
             <input type="number" id="fixFee" value="0.30" step="0.01" oninput="calculate()">
         </div>
     </div>
 
     <div class="disclaimer-box">
-        <div class="disclaimer-icon">ℹ️</div>
+        <div class="disclaimer-icon"><i class="fa-solid fa-circle-info"></i></div>
         <div class="disclaimer-text">
             金額僅供參考。實際入帳金額可能因 PayPal 政策、帳戶所在地或即時匯率變動而有微小差異。<br>
-            Figures are estimates. Actual amounts may vary depending on PayPal policies and exchange rates.
+            Figures are estimates. Actual amounts may vary depending on PayPal policies.
         </div>
     </div>
 </div>
 
 <script>
-    // 貨幣設定資料
+    // 貨幣資料
     const currencySettings = {
         USD: { symbol: "$", fix: 0.30, rate: 32.0 },
         TWD: { symbol: "NT$", fix: 10.00, rate: 1.0 },
@@ -248,7 +271,6 @@
         GBP: { symbol: "£", fix: 0.20, rate: 40.0 }
     };
 
-    // 切換貨幣時執行
     function updateCurrency() {
         const currency = document.getElementById('currency').value;
         const settings = currencySettings[currency];
@@ -264,8 +286,6 @@
             twdDisplay.style.display = 'none';
         } else {
             exchangeGroup.style.display = 'block';
-            // 這裡不設定為 inline-block，而是讓 calculate 函數決定是否顯示
-            // 以免剛切換時出現 "≈ NT$ 0"
             if (parseFloat(document.getElementById('receiveAmount').value) > 0) {
                  twdDisplay.style.display = 'inline-block';
             } else {
@@ -275,7 +295,6 @@
         calculate();
     }
 
-    // 主要計算邏輯
     function calculate() {
         let want = parseFloat(document.getElementById('receiveAmount').value);
         let rate = parseFloat(document.getElementById('feeRate').value);
@@ -328,13 +347,10 @@
         document.getElementById('realGet').innerText = displayGet;
     }
     
-    // 修復後的設定開關功能
     function toggleSettings() {
-        const panel = document.getElementById('settingsPanel');
-        panel.classList.toggle('show');
+        document.getElementById('settingsPanel').classList.toggle('show');
     }
 
-    // 頁面載入時初始化
     window.onload = function() {
         updateCurrency();
     };
