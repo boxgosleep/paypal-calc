@@ -4,16 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PayPal Fee Calculator ✨</title>
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐰</text></svg>">
+
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #FFF5F7; /* 淺粉紅背景 */
+            --bg-color: #FFF5F7;
             --card-bg: #FFFFFF;
-            --primary: #FF8BA7; /* 蜜桃粉 */
+            --primary: #FF8BA7;
             --secondary: #FFC6C7;
             --text-main: #594A4E;
             --text-light: #9C8990;
-            --highlight: #FAFAFA;
         }
 
         body {
@@ -26,6 +28,7 @@
             min-height: 100vh;
             margin: 0;
             padding: 20px;
+            /* 讓背景有點可愛的圓點裝飾 */
             background-image: radial-gradient(#ffeef2 20%, transparent 20%), radial-gradient(#ffeef2 20%, transparent 20%);
             background-position: 0 0, 50px 50px;
             background-size: 100px 100px;
@@ -43,7 +46,6 @@
             position: relative;
         }
 
-        /* 裝飾用的小圓點 */
         .container::before {
             content: '✨';
             position: absolute;
@@ -77,7 +79,6 @@
             margin-left: 5px;
         }
 
-        /* 幣別選擇器與輸入框 */
         .currency-row {
             display: flex;
             gap: 10px;
@@ -116,7 +117,6 @@
             box-shadow: 0 0 0 4px rgba(255, 139, 167, 0.1);
         }
 
-        /* 結果顯示區 */
         .result-box {
             background: linear-gradient(135deg, #FFF0F3 0%, #FFF5F7 100%);
             margin-top: 2rem;
@@ -145,7 +145,6 @@
             justify-content: space-between; 
         }
 
-        /* 設定區塊 */
         .settings-toggle {
             margin-top: 1.5rem;
             font-size: 0.8rem;
@@ -183,7 +182,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* 手機版調整 */
         @media (max-width: 480px) {
             .container { padding: 1.5rem; }
             .result-value { font-size: 2.5rem; }
@@ -242,7 +240,6 @@
 </div>
 
 <script>
-    // 各國貨幣的 PayPal 固定費用參考表 (Cross-border)
     const currencySettings = {
         USD: { symbol: "$", fix: 0.30 },
         TWD: { symbol: "NT$", fix: 10.00 },
@@ -255,14 +252,11 @@
     function updateCurrency() {
         const currency = document.getElementById('currency').value;
         const settings = currencySettings[currency];
-        
-        // 更新固定費用欄位
         document.getElementById('fixFee').value = settings.fix;
         calculate();
     }
 
     function calculate() {
-        // 取得輸入值
         let want = parseFloat(document.getElementById('receiveAmount').value);
         let rate = parseFloat(document.getElementById('feeRate').value);
         let fix = parseFloat(document.getElementById('fixFee').value);
@@ -276,35 +270,27 @@
             return;
         }
 
-        // 核心公式： (實拿 + 固定費) / (1 - 費率百分比)
         let rateDecimal = rate / 100;
         let ask = (want + fix) / (1 - rateDecimal);
         
-        // 日圓通常不顯示小數點
         let displayAsk, displayFee, displayGet;
 
         if (currency === 'JPY') {
-            ask = Math.ceil(ask); // 日圓無條件進位到整數
-            let fee = Math.ceil(ask * rateDecimal + fix); // 日圓手續費通常也被視為整數計算
-            
-            // 重新校正實拿 (因為進位可能導致微小誤差，這裡以顯示邏輯為主)
+            ask = Math.ceil(ask);
+            let fee = Math.ceil(ask * rateDecimal + fix);
             let real = ask - fee;
-
             displayAsk = ask.toLocaleString();
             displayFee = "-" + symbol + fee.toLocaleString();
             displayGet = symbol + real.toLocaleString();
         } else {
-            // 其他貨幣保留兩位小數
             ask = Math.ceil(ask * 100) / 100;
             let fee = (ask * rateDecimal) + fix;
             let real = ask - fee;
-
             displayAsk = ask.toFixed(2);
             displayFee = "-" + symbol + fee.toFixed(2);
             displayGet = symbol + real.toFixed(2);
         }
         
-        // 更新畫面
         document.getElementById('askAmount').innerText = symbol + displayAsk;
         document.getElementById('feeCost').innerText = displayFee;
         document.getElementById('realGet').innerText = displayGet;
