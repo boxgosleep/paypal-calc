@@ -16,6 +16,7 @@
             --secondary: #FFC6C7;
             --text-main: #594A4E;
             --text-light: #9C8990;
+            --accent-green: #20bf6b; /* 用於顯示台幣的顏色 */
         }
 
         body {
@@ -28,7 +29,6 @@
             min-height: 100vh;
             margin: 0;
             padding: 20px;
-            /* 讓背景有點可愛的圓點裝飾 */
             background-image: radial-gradient(#ffeef2 20%, transparent 20%), radial-gradient(#ffeef2 20%, transparent 20%);
             background-position: 0 0, 50px 50px;
             background-size: 100px 100px;
@@ -143,6 +143,20 @@
             color: var(--text-light); 
             display: flex; 
             justify-content: space-between; 
+            align-items: center;
+        }
+
+        /* 台幣換算顯示區 */
+        .twd-convert {
+            margin-top: 5px;
+            font-size: 0.9rem;
+            color: var(--primary);
+            font-weight: 800;
+            background: #fff;
+            padding: 4px 12px;
+            border-radius: 20px;
+            display: inline-block;
+            border: 1px solid #ffebf0;
         }
 
         .settings-toggle {
@@ -215,13 +229,22 @@
         
         <div class="breakdown">
             <span>Fees 手續費: <span id="feeCost">$0.00</span></span>
-            <span>Net 實拿: <span id="realGet">$0.00</span></span>
+            <div style="text-align: right;">
+                <span>Net 實拿: <span id="realGet">$0.00</span></span>
+                <div id="twdDisplay" class="twd-convert" style="display:none;">≈ NT$ 0</div>
+            </div>
         </div>
     </div>
 
-    <div class="settings-toggle" onclick="toggleSettings()">⚙️ 自訂費率 / Advanced Settings</div>
+    <div class="settings-toggle" onclick="toggleSettings()">⚙️ 匯率與費率設定 / Settings</div>
     
     <div class="settings" id="settingsPanel">
+        <div class="input-group" id="exchangeRateGroup">
+            <label>換算匯率 (外幣 → 台幣)</label>
+            <input type="number" id="exchangeRate" value="32" step="0.1" oninput="calculate()">
+            <div style="font-size: 0.75rem; color: #999; margin-top: 5px;">*PayPal 提領匯率通常較差，建議設保守一點</div>
+        </div>
+
         <div class="input-group">
             <label>手續費率 / Fee Rate (%)</label>
             <input type="number" id="feeRate" value="4.4" step="0.1" oninput="calculate()">
@@ -230,7 +253,6 @@
             <label>固定費用 / Fixed Fee</label>
             <input type="number" id="fixFee" value="0.30" step="0.01" oninput="calculate()">
         </div>
-        <div style="font-size: 0.8rem; color: #999;">*跨國交易通常為 4.4% + 固定費</div>
     </div>
 
     <p class="disclaimer">
@@ -240,26 +262,44 @@
 </div>
 
 <script>
+    // 各國貨幣設定：包含符號、固定費、以及「預設匯率(對台幣)」
+    // 這裡的匯率是「粗估值」，使用者可以在介面上自己改
     const currencySettings = {
-        USD: { symbol: "$", fix: 0.30 },
-        TWD: { symbol: "NT$", fix: 10.00 },
-        JPY: { symbol: "¥", fix: 40.00 },
-        HKD: { symbol: "HK$", fix: 2.35 },
-        EUR: { symbol: "€", fix: 0.35 },
-        GBP: { symbol: "£", fix: 0.20 }
+        USD: { symbol: "$", fix: 0.30, rate: 32.0 },
+        TWD: { symbol: "NT$", fix: 10.00, rate: 1.0 },
+        JPY: { symbol: "¥", fix: 40.00, rate: 0.21 }, // 日幣預設 0.21
+        HKD: { symbol: "HK$", fix: 2.35, rate: 4.1 },
+        EUR: { symbol: "€", fix: 0.35, rate: 34.5 },
+        GBP: { symbol: "£", fix: 0.20, rate: 40.0 }
     };
 
     function updateCurrency() {
         const currency = document.getElementById('currency').value;
         const settings = currencySettings[currency];
+        
+        // 更新固定費用
         document.getElementById('fixFee').value = settings.fix;
+        // 更新預設匯率
+        document.getElementById('exchangeRate').value = settings.rate;
+        
+        // 如果選的是台幣，隱藏匯率設定和換算結果
+        if (currency === 'TWD') {
+            document.getElementById('exchangeRateGroup').style.display = 'none';
+            document.getElementById('twdDisplay').style.display = 'none';
+        } else {
+            document.getElementById('exchangeRateGroup').style.display = 'block';
+            document.getElementById('twdDisplay').style.display = 'inline-block';
+        }
+
         calculate();
     }
 
     function calculate() {
+        // 取得輸入值
         let want = parseFloat(document.getElementById('receiveAmount').value);
         let rate = parseFloat(document.getElementById('feeRate').value);
         let fix = parseFloat(document.getElementById('fixFee').value);
+        let exchange = parseFloat(document.getElementById('exchangeRate').value); // 取得匯率
         let currency = document.getElementById('currency').value;
         let symbol = currencySettings[currency].symbol;
 
@@ -267,38 +307,52 @@
             document.getElementById('askAmount').innerText = symbol + "0.00";
             document.getElementById('feeCost').innerText = symbol + "0.00";
             document.getElementById('realGet').innerText = symbol + "0.00";
+            document.getElementById('twdDisplay').innerText = "≈ NT$ 0";
             return;
         }
 
+        // 核心公式： (實拿 + 固定費) / (1 - 費率百分比)
         let rateDecimal = rate / 100;
         let ask = (want + fix) / (1 - rateDecimal);
         
         let displayAsk, displayFee, displayGet;
+        let realNet = 0; // 用來算台幣的精確值
 
         if (currency === 'JPY') {
             ask = Math.ceil(ask);
             let fee = Math.ceil(ask * rateDecimal + fix);
-            let real = ask - fee;
+            realNet = ask - fee; // 日幣實拿
+            
             displayAsk = ask.toLocaleString();
             displayFee = "-" + symbol + fee.toLocaleString();
-            displayGet = symbol + real.toLocaleString();
+            displayGet = symbol + realNet.toLocaleString();
         } else {
             ask = Math.ceil(ask * 100) / 100;
             let fee = (ask * rateDecimal) + fix;
-            let real = ask - fee;
+            realNet = ask - fee; // 其他貨幣實拿
+            
             displayAsk = ask.toFixed(2);
             displayFee = "-" + symbol + fee.toFixed(2);
-            displayGet = symbol + real.toFixed(2);
+            displayGet = symbol + realNet.toFixed(2);
         }
         
+        // 計算台幣約值
+        if (currency !== 'TWD') {
+            let twdValue = Math.floor(realNet * exchange); // 無條件捨去小數點，保守一點
+            document.getElementById('twdDisplay').innerText = "≈ NT$ " + twdValue.toLocaleString();
+            document.getElementById('twdDisplay').style.display = "inline-block";
+        } else {
+            document.getElementById('twdDisplay').style.display = "none";
+        }
+
+        // 更新畫面
         document.getElementById('askAmount').innerText = symbol + displayAsk;
         document.getElementById('feeCost').innerText = displayFee;
         document.getElementById('realGet').innerText = displayGet;
     }
     
-    function toggleSettings() {
-        document.getElementById('settingsPanel').classList.toggle('show');
-    }
+    // 初始化一次
+    updateCurrency();
 </script>
 
 </body>
