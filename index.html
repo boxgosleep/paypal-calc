@@ -16,11 +16,11 @@
             --secondary: #FFC6C7;
             --text-main: #594A4E;
             --text-light: #9C8990;
-            --accent-green: #20bf6b; /* 用於顯示台幣的顏色 */
+            --accent-green: #20bf6b;
         }
 
         body {
-            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
             display: flex;
@@ -46,13 +46,16 @@
             position: relative;
         }
 
-        .container::before {
-            content: '✨';
+        /* --- 新的扁平化星星圖示 (SVG) --- */
+        .decoration-star {
             position: absolute;
-            top: -20px;
-            right: -10px;
-            font-size: 2rem;
-            animation: float 3s ease-in-out infinite;
+            top: -25px;
+            right: -20px;
+            width: 50px;
+            height: 50px;
+            background-image: url("data:image/svg+xml,%3Csvg width='50' height='50' viewBox='0 0 50 50' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M25 0L28.5 18.5L47 22L28.5 25.5L25 44L21.5 25.5L3 22L21.5 18.5L25 0Z' fill='%23FF8BA7'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            animation: float-star 3s ease-in-out infinite;
         }
 
         h1 { 
@@ -68,55 +71,26 @@
             margin-bottom: 2rem;
         }
 
+        /* 輸入區塊樣式 */
         .input-group { margin-bottom: 1.5rem; text-align: left; }
-        
-        label { 
-            display: block; 
-            font-size: 0.95rem; 
-            margin-bottom: 0.6rem; 
-            font-weight: 700; 
-            color: var(--text-main);
-            margin-left: 5px;
-        }
-
-        .currency-row {
-            display: flex;
-            gap: 10px;
-        }
-        
-        select {
-            padding: 12px;
-            border-radius: 15px;
-            border: 2px solid #F0E6E8;
-            background: #FAFAFA;
-            font-weight: 700;
-            color: var(--text-main);
-            cursor: pointer;
-            outline: none;
-            font-family: inherit;
-        }
-
-        input {
-            width: 100%;
-            padding: 14px;
-            font-size: 1.1rem;
-            border: 2px solid #F0E6E8;
+        label { display: block; font-size: 0.95rem; margin-bottom: 0.6rem; font-weight: 700; margin-left: 5px; }
+        .currency-row { display: flex; gap: 10px; }
+        select, input {
+            padding: 12px 14px;
             border-radius: 18px;
-            box-sizing: border-box;
-            transition: 0.3s;
-            outline: none;
+            border: 2px solid #F0E6E8;
             background: #FAFAFA;
-            color: var(--text-main);
-            font-family: inherit;
-            font-weight: 700;
+            font-weight: 700; color: var(--text-main);
+            outline: none; font-family: inherit; font-size: 1.1rem;
+            transition: 0.3s;
         }
-        
+        input { width: 100%; }
         input:focus, select:focus { 
-            border-color: var(--primary); 
-            background: #FFF;
+            border-color: var(--primary); background: #FFF;
             box-shadow: 0 0 0 4px rgba(255, 139, 167, 0.1);
         }
 
+        /* 結果顯示區 */
         .result-box {
             background: linear-gradient(135deg, #FFF0F3 0%, #FFF5F7 100%);
             margin-top: 2rem;
@@ -125,71 +99,62 @@
             border: 2px solid #FFF;
             box-shadow: inset 0 0 20px rgba(255, 139, 167, 0.05);
         }
-
         .result-label { font-size: 0.9rem; color: var(--text-light); margin-bottom: 0.5rem; font-weight: 600; }
         .result-value { 
-            font-size: 3rem; 
-            font-weight: 800; 
-            color: var(--primary); 
-            line-height: 1.1;
-            text-shadow: 2px 2px 0px rgba(255, 255, 255, 1);
+            font-size: 3rem; font-weight: 800; color: var(--primary); line-height: 1.1;
         }
         
-        .breakdown { 
-            margin-top: 1.2rem; 
-            padding-top: 1rem;
+        /* --- 強制對齊的網格系統 (修復對齊問題) --- */
+        .breakdown-grid {
+            margin-top: 1.5rem; padding-top: 1rem;
             border-top: 2px dashed rgba(255, 139, 167, 0.2);
-            font-size: 0.85rem; 
-            color: var(--text-light); 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center;
+            display: grid;
+            grid-template-columns: auto 1fr; /* 左側自動寬，右側佔滿 */
+            gap: 8px 20px; /* 上下間距8px, 左右間距20px */
+            align-items: start;
+        }
+        .bd-label { text-align: left; font-size: 0.85rem; color: var(--text-light); padding-top: 4px;}
+        .bd-value { text-align: right; font-size: 1rem; font-weight: 700; color: var(--text-main); }
+
+        /* 台幣小標籤 */
+        .twd-tag {
+            font-size: 0.8rem; color: var(--primary);
+            background: #fff; padding: 2px 8px;
+            border-radius: 12px; border: 1px solid #ffebf0;
+            display: inline-block; margin-top: 4px;
         }
 
-        /* 台幣換算顯示區 */
-        .twd-convert {
-            margin-top: 5px;
-            font-size: 0.9rem;
-            color: var(--primary);
-            font-weight: 800;
-            background: #fff;
-            padding: 4px 12px;
-            border-radius: 20px;
-            display: inline-block;
-            border: 1px solid #ffebf0;
-        }
-
+        /* --- 設定區塊 (變可愛了) --- */
         .settings-toggle {
-            margin-top: 1.5rem;
-            font-size: 0.8rem;
-            color: var(--primary);
-            cursor: pointer;
-            opacity: 0.8;
-            transition: 0.3s;
+            margin-top: 1.5rem; font-size: 0.85rem; color: var(--primary);
+            cursor: pointer; opacity: 0.8; transition: 0.3s;
+            display: inline-flex; align-items: center; gap: 5px;
         }
-        .settings-toggle:hover { opacity: 1; text-decoration: underline; }
+        .settings-toggle:hover { opacity: 1; }
         
         .settings { 
-            display: none; 
-            margin-top: 1rem; 
-            padding: 1rem; 
-            background: #FAFAFA; 
-            border-radius: 15px; 
-            text-align: left;
+            display: none; /* 預設隱藏 */
+            margin-top: 1rem; padding: 1.2rem; 
+            background: #FFFDFF; border-radius: 20px; text-align: left;
+            border: 2px dashed var(--secondary); /* 可愛虛線框 */
         }
         .settings.show { display: block; animation: slideDown 0.3s ease-out; }
+        .settings-icon { margin-right: 6px; }
 
-        .disclaimer {
+        /* --- 免責聲明 (重新排版) --- */
+        .disclaimer-box {
             margin-top: 2rem;
-            font-size: 0.75rem;
-            color: #C4B5B9;
-            line-height: 1.5;
+            background: #F8F4F6; padding: 12px;
+            border-radius: 12px;
+            text-align: left; /* 左對齊 */
+            display: flex; gap: 10px; align-items: flex-start;
         }
+        .disclaimer-icon { font-size: 1.2rem; opacity: 0.7; }
+        .disclaimer-text { font-size: 0.75rem; color: #9C8990; line-height: 1.6; }
 
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
+        @keyframes float-star {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(5deg); }
         }
         @keyframes slideDown {
             from { opacity: 0; transform: translateY(-10px); }
@@ -205,11 +170,13 @@
 <body>
 
 <div class="container">
+    <div class="decoration-star"></div>
+
     <h1>Fee Calculator 🐰</h1>
     <div class="subtitle">PayPal 手續費逆算機</div>
     
     <div class="input-group">
-        <label>實拿金額 / Net Amount</label>
+        <label>🌱 實拿金額 / Net Amount</label>
         <div class="currency-row">
             <select id="currency" onchange="updateCurrency()">
                 <option value="USD">USD ($)</option>
@@ -219,7 +186,7 @@
                 <option value="EUR">EUR (€)</option>
                 <option value="GBP">GBP (£)</option>
             </select>
-            <input type="number" id="receiveAmount" placeholder="500" oninput="calculate()">
+            <input type="number" id="receiveAmount" placeholder="例如: 500" oninput="calculate()">
         </div>
     </div>
 
@@ -227,132 +194,150 @@
         <div class="result-label">報價金額 (客戶需付) <br> Total Ask Price</div>
         <div class="result-value" id="askAmount">$0.00</div>
         
-        <div class="breakdown">
-            <span>Fees 手續費: <span id="feeCost">$0.00</span></span>
-            <div style="text-align: right;">
-                <span>Net 實拿: <span id="realGet">$0.00</span></span>
-                <div id="twdDisplay" class="twd-convert" style="display:none;">≈ NT$ 0</div>
+        <div class="breakdown-grid">
+            <div class="bd-label">Fees 手續費:</div>
+            <div class="bd-value" id="feeCost">$0.00</div>
+            
+            <div class="bd-label">Net 實拿:</div>
+            <div class="bd-value">
+                <span id="realGet">$0.00</span>
+                <br>
+                <span id="twdDisplay" class="twd-tag" style="display:none;">≈ NT$ 0</span>
             </div>
         </div>
     </div>
 
-    <div class="settings-toggle" onclick="toggleSettings()">⚙️ 匯率與費率設定 / Settings</div>
+    <div class="settings-toggle" onclick="toggleSettings()">
+        <span>⚙️ 匯率與費率設定 / Settings</span>
+    </div>
     
     <div class="settings" id="settingsPanel">
         <div class="input-group" id="exchangeRateGroup">
-            <label>換算匯率 (外幣 → 台幣)</label>
+            <label><span class="settings-icon">💱</span>換算匯率 (外幣 → 台幣)</label>
             <input type="number" id="exchangeRate" value="32" step="0.1" oninput="calculate()">
-            <div style="font-size: 0.75rem; color: #999; margin-top: 5px;">*PayPal 提領匯率通常較差，建議設保守一點</div>
+            <div style="font-size: 0.75rem; color: #FF8BA7; margin-top: 5px;">*建議設定比銀行牌告低一點 (預留匯損)</div>
         </div>
 
         <div class="input-group">
-            <label>手續費率 / Fee Rate (%)</label>
+            <label><span class="settings-icon">🔢</span>手續費率 / Fee Rate (%)</label>
             <input type="number" id="feeRate" value="4.4" step="0.1" oninput="calculate()">
         </div>
-        <div class="input-group">
-            <label>固定費用 / Fixed Fee</label>
+        <div class="input-group" style="margin-bottom: 0;">
+            <label><span class="settings-icon">💵</span>固定費用 / Fixed Fee</label>
             <input type="number" id="fixFee" value="0.30" step="0.01" oninput="calculate()">
         </div>
     </div>
 
-    <p class="disclaimer">
-        ⚠️ 金額僅供參考用，實際入帳金額可能因 PayPal 政策、帳戶所在地或匯率變動而有微小差異。<br>
-        Amounts are for reference only. Actual fees may vary.
-    </p>
+    <div class="disclaimer-box">
+        <div class="disclaimer-icon">ℹ️</div>
+        <div class="disclaimer-text">
+            金額僅供參考。實際入帳金額可能因 PayPal 政策、帳戶所在地或即時匯率變動而有微小差異。<br>
+            Figures are estimates. Actual amounts may vary depending on PayPal policies and exchange rates.
+        </div>
+    </div>
 </div>
 
 <script>
-    // 各國貨幣設定：包含符號、固定費、以及「預設匯率(對台幣)」
-    // 這裡的匯率是「粗估值」，使用者可以在介面上自己改
+    // 貨幣設定資料
     const currencySettings = {
         USD: { symbol: "$", fix: 0.30, rate: 32.0 },
         TWD: { symbol: "NT$", fix: 10.00, rate: 1.0 },
-        JPY: { symbol: "¥", fix: 40.00, rate: 0.21 }, // 日幣預設 0.21
+        JPY: { symbol: "¥", fix: 40.00, rate: 0.215 },
         HKD: { symbol: "HK$", fix: 2.35, rate: 4.1 },
         EUR: { symbol: "€", fix: 0.35, rate: 34.5 },
         GBP: { symbol: "£", fix: 0.20, rate: 40.0 }
     };
 
+    // 切換貨幣時執行
     function updateCurrency() {
         const currency = document.getElementById('currency').value;
         const settings = currencySettings[currency];
         
-        // 更新固定費用
         document.getElementById('fixFee').value = settings.fix;
-        // 更新預設匯率
         document.getElementById('exchangeRate').value = settings.rate;
         
-        // 如果選的是台幣，隱藏匯率設定和換算結果
-        if (currency === 'TWD') {
-            document.getElementById('exchangeRateGroup').style.display = 'none';
-            document.getElementById('twdDisplay').style.display = 'none';
-        } else {
-            document.getElementById('exchangeRateGroup').style.display = 'block';
-            document.getElementById('twdDisplay').style.display = 'inline-block';
-        }
+        const twdDisplay = document.getElementById('twdDisplay');
+        const exchangeGroup = document.getElementById('exchangeRateGroup');
 
+        if (currency === 'TWD') {
+            exchangeGroup.style.display = 'none';
+            twdDisplay.style.display = 'none';
+        } else {
+            exchangeGroup.style.display = 'block';
+            // 這裡不設定為 inline-block，而是讓 calculate 函數決定是否顯示
+            // 以免剛切換時出現 "≈ NT$ 0"
+            if (parseFloat(document.getElementById('receiveAmount').value) > 0) {
+                 twdDisplay.style.display = 'inline-block';
+            } else {
+                 twdDisplay.style.display = 'none';
+            }
+        }
         calculate();
     }
 
+    // 主要計算邏輯
     function calculate() {
-        // 取得輸入值
         let want = parseFloat(document.getElementById('receiveAmount').value);
         let rate = parseFloat(document.getElementById('feeRate').value);
         let fix = parseFloat(document.getElementById('fixFee').value);
-        let exchange = parseFloat(document.getElementById('exchangeRate').value); // 取得匯率
+        let exchange = parseFloat(document.getElementById('exchangeRate').value);
         let currency = document.getElementById('currency').value;
         let symbol = currencySettings[currency].symbol;
+        const twdDisplay = document.getElementById('twdDisplay');
 
         if (isNaN(want) || want <= 0) {
             document.getElementById('askAmount').innerText = symbol + "0.00";
             document.getElementById('feeCost').innerText = symbol + "0.00";
             document.getElementById('realGet').innerText = symbol + "0.00";
-            document.getElementById('twdDisplay').innerText = "≈ NT$ 0";
+            twdDisplay.style.display = 'none';
             return;
         }
 
-        // 核心公式： (實拿 + 固定費) / (1 - 費率百分比)
         let rateDecimal = rate / 100;
         let ask = (want + fix) / (1 - rateDecimal);
         
         let displayAsk, displayFee, displayGet;
-        let realNet = 0; // 用來算台幣的精確值
+        let realNet = 0;
 
         if (currency === 'JPY') {
             ask = Math.ceil(ask);
             let fee = Math.ceil(ask * rateDecimal + fix);
-            realNet = ask - fee; // 日幣實拿
-            
+            realNet = ask - fee;
             displayAsk = ask.toLocaleString();
             displayFee = "-" + symbol + fee.toLocaleString();
             displayGet = symbol + realNet.toLocaleString();
         } else {
             ask = Math.ceil(ask * 100) / 100;
             let fee = (ask * rateDecimal) + fix;
-            realNet = ask - fee; // 其他貨幣實拿
-            
+            realNet = ask - fee;
             displayAsk = ask.toFixed(2);
             displayFee = "-" + symbol + fee.toFixed(2);
             displayGet = symbol + realNet.toFixed(2);
         }
         
-        // 計算台幣約值
         if (currency !== 'TWD') {
-            let twdValue = Math.floor(realNet * exchange); // 無條件捨去小數點，保守一點
-            document.getElementById('twdDisplay').innerText = "≈ NT$ " + twdValue.toLocaleString();
-            document.getElementById('twdDisplay').style.display = "inline-block";
+            let twdValue = Math.floor(realNet * exchange);
+            twdDisplay.innerText = "≈ NT$ " + twdValue.toLocaleString();
+            twdDisplay.style.display = "inline-block";
         } else {
-            document.getElementById('twdDisplay').style.display = "none";
+            twdDisplay.style.display = "none";
         }
 
-        // 更新畫面
         document.getElementById('askAmount').innerText = symbol + displayAsk;
         document.getElementById('feeCost').innerText = displayFee;
         document.getElementById('realGet').innerText = displayGet;
     }
     
-    // 初始化一次
-    updateCurrency();
+    // 修復後的設定開關功能
+    function toggleSettings() {
+        const panel = document.getElementById('settingsPanel');
+        panel.classList.toggle('show');
+    }
+
+    // 頁面載入時初始化
+    window.onload = function() {
+        updateCurrency();
+    };
 </script>
 
 </body>
