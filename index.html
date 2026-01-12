@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PayPal 手續費逆算機</title>
+    <style>
+        :root {
+            --primary: #0070BA; /* PayPal Blue */
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #2c3e50;
+            --gray: #95a5a6;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        h1 { font-size: 1.5rem; margin-bottom: 1.5rem; color: var(--primary); }
+        .input-group { margin-bottom: 1.2rem; text-align: left; }
+        label { display: block; font-size: 0.9rem; margin-bottom: 0.5rem; font-weight: 600; color: var(--text); }
+        input {
+            width: 100%;
+            padding: 12px;
+            font-size: 1rem;
+            border: 2px solid #eef2f7;
+            border-radius: 10px;
+            box-sizing: border-box; /* 修正寬度問題 */
+            transition: 0.3s;
+            outline: none;
+        }
+        input:focus { border-color: var(--primary); }
+        
+        .result-box {
+            background: #eef7ff;
+            margin-top: 2rem;
+            padding: 1.5rem;
+            border-radius: 15px;
+            border: 1px solid #dceefc;
+        }
+        .result-label { font-size: 0.9rem; color: var(--primary); margin-bottom: 0.5rem; }
+        .result-value { font-size: 2.5rem; font-weight: 800; color: var(--primary); line-height: 1; }
+        .breakdown { font-size: 0.85rem; color: var(--gray); margin-top: 1rem; display: flex; justify-content: space-between; }
+        
+        .settings-toggle {
+            margin-top: 1.5rem;
+            font-size: 0.85rem;
+            color: var(--gray);
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        .settings { display: none; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #eee; }
+        .settings.show { display: block; }
+
+        /* 響應式 */
+        @media (max-width: 480px) {
+            .container { padding: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>💸 PayPal 報價計算機</h1>
+    
+    <div class="input-group">
+        <label>你想實收多少 (USD)？</label>
+        <input type="number" id="receiveAmount" placeholder="例如: 500" oninput="calculate()">
+    </div>
+
+    <div class="result-box">
+        <div class="result-label">你應該向客戶報價</div>
+        <div class="result-value" id="askAmount">$0.00</div>
+        
+        <div class="breakdown">
+            <span>PayPal 手續費: <span id="feeCost">$0.00</span></span>
+            <span>實拿: <span id="realGet">$0.00</span></span>
+        </div>
+    </div>
+
+    <div class="settings-toggle" onclick="toggleSettings()">調整費率設定 ⚙️</div>
+    
+    <div class="settings" id="settingsPanel">
+        <div class="input-group">
+            <label>手續費率 (%)</label>
+            <input type="number" id="feeRate" value="4.4" step="0.1" oninput="calculate()">
+        </div>
+        <div class="input-group">
+            <label>固定費用 (USD)</label>
+            <input type="number" id="fixFee" value="0.30" step="0.05" oninput="calculate()">
+        </div>
+    </div>
+</div>
+
+<script>
+    function calculate() {
+        // 取得輸入值
+        let want = parseFloat(document.getElementById('receiveAmount').value);
+        let rate = parseFloat(document.getElementById('feeRate').value);
+        let fix = parseFloat(document.getElementById('fixFee').value);
+
+        if (isNaN(want) || want <= 0) {
+            document.getElementById('askAmount').innerText = "$0.00";
+            document.getElementById('feeCost').innerText = "$0.00";
+            document.getElementById('realGet').innerText = "$0.00";
+            return;
+        }
+
+        // 核心公式： (實拿 + 固定費) / (1 - 費率百分比)
+        let rateDecimal = rate / 100;
+        let ask = (want + fix) / (1 - rateDecimal);
+        
+        // 為了保險，這裡稍微無條件進位到小數第二位，避免因為浮點數誤差少拿0.01
+        // Math.ceil(ask * 100) / 100 是常見的貨幣進位法
+        ask = Math.ceil(ask * 100) / 100;
+
+        // 計算實際會被扣多少
+        let fee = (ask * rateDecimal) + fix;
+        
+        // 更新畫面
+        document.getElementById('askAmount').innerText = "$" + ask.toFixed(2);
+        document.getElementById('feeCost').innerText = "-$" + fee.toFixed(2);
+        document.getElementById('realGet').innerText = "$" + (ask - fee).toFixed(2);
+    }
+
+    function toggleSettings() {
+        document.getElementById('settingsPanel').classList.toggle('show');
+    }
+</script>
+
+</body>
+</html>
